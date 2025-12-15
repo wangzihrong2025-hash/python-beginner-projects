@@ -6,4 +6,4 @@ age=25
 
 print(name)
 print(age)
-print("My name is",name",I'm",age,"years old")
+print("My name is",name+",I'm",age,"years old")
