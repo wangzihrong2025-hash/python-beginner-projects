@@ -1,2 +1,2 @@
 # python-beginner-projects
-Daily Python projects and notes00001
+Daily Python projects and notes
