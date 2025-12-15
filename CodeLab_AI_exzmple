@@ -1,0 +1,226 @@
+# Beginner-friendly Python mini app (runs in Google Colab / any Python 3)
+# Features: Todo + Simple Expense Tracker + Save/Load to a JSON file
+
+import json
+from datetime import datetime
+
+DATA_FILE = "mini_app_data.json"
+
+def now_str():
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+def load_data():
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        # basic shape validation
+        if "todos" not in data: data["todos"] = []
+        if "expenses" not in data: data["expenses"] = []
+        return data
+    except FileNotFoundError:
+        return {"todos": [], "expenses": []}
+    except json.JSONDecodeError:
+        # If file is corrupted, start fresh (but keep a warning)
+        print("[WARN] Data file was not valid JSON. Starting with empty data.")
+        return {"todos": [], "expenses": []}
+
+def save_data(data):
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    print(f"[OK] Saved to {DATA_FILE}")
+
+def read_int(prompt, allow_empty=False, default=None):
+    while True:
+        s = input(prompt).strip()
+        if allow_empty and s == "":
+            return default
+        try:
+            return int(s)
+        except ValueError:
+            print("請輸入整數（例如 1、2、3）。")
+
+def read_float(prompt):
+    while True:
+        s = input(prompt).strip()
+        try:
+            return float(s)
+        except ValueError:
+            print("請輸入數字（例如 120 或 120.5）。")
+
+def pause():
+    input("\n按 Enter 繼續...")
+
+# ------------------ TODO FUNCTIONS ------------------
+
+def list_todos(data):
+    todos = data["todos"]
+    if not todos:
+        print("目前沒有待辦事項。")
+        return
+    print("\n--- 待辦清單 ---")
+    for i, t in enumerate(todos, start=1):
+        status = "✅" if t["done"] else "⬜"
+        due = f" | due: {t['due']}" if t.get("due") else ""
+        print(f"{i:>2}. {status} {t['title']}{due} | created: {t['created_at']}")
+
+def add_todo(data):
+    title = input("輸入待辦內容：").strip()
+    if not title:
+        print("待辦內容不能空白。")
+        return
+    due = input("截止日期（可留空，例如 2025-12-31）：").strip()
+    todo = {
+        "title": title,
+        "done": False,
+        "created_at": now_str()
+    }
+    if due:
+        todo["due"] = due
+    data["todos"].append(todo)
+    print("[OK] 已新增待辦。")
+
+def toggle_todo(data):
+    if not data["todos"]:
+        print("沒有待辦可切換。")
+        return
+    list_todos(data)
+    idx = read_int("要切換完成/未完成的編號：")
+    if idx < 1 or idx > len(data["todos"]):
+        print("編號超出範圍。")
+        return
+    data["todos"][idx - 1]["done"] = not data["todos"][idx - 1]["done"]
+    print("[OK] 已切換狀態。")
+
+def delete_todo(data):
+    if not data["todos"]:
+        print("沒有待辦可刪除。")
+        return
+    list_todos(data)
+    idx = read_int("要刪除的待辦編號：")
+    if idx < 1 or idx > len(data["todos"]):
+        print("編號超出範圍。")
+        return
+    removed = data["todos"].pop(idx - 1)
+    print(f"[OK] 已刪除：{removed['title']}")
+
+# ------------------ EXPENSE FUNCTIONS ------------------
+
+def list_expenses(data, limit=20):
+    expenses = data["expenses"]
+    if not expenses:
+        print("目前沒有支出紀錄。")
+        return
+    print("\n--- 支出紀錄（最新在前，最多顯示 20 筆）---")
+    for i, e in enumerate(reversed(expenses[-limit:]), start=1):
+        print(f"{i:>2}. {e['date']} | {e['category']:<10} | {e['amount']:>8.2f} | {e['note']}")
+
+def add_expense(data):
+    date = input("日期（可留空，預設今天 YYYY-MM-DD）：").strip()
+    if not date:
+        date = datetime.now().strftime("%Y-%m-%d")
+    category = input("分類（例如 食物/交通/房租/娛樂）：").strip()
+    if not category:
+        category = "未分類"
+    amount = read_float("金額：")
+    note = input("備註（可留空）：").strip()
+    expense = {
+        "date": date,
+        "category": category,
+        "amount": amount,
+        "note": note
+    }
+    data["expenses"].append(expense)
+    print("[OK] 已新增支出。")
+
+def expense_summary(data):
+    expenses = data["expenses"]
+    if not expenses:
+        print("沒有支出紀錄可統計。")
+        return
+
+    total = 0.0
+    by_cat = {}
+    for e in expenses:
+        total += e["amount"]
+        by_cat[e["category"]] = by_cat.get(e["category"], 0.0) + e["amount"]
+
+    print("\n--- 支出統計 ---")
+    print(f"總支出：{total:.2f}")
+    print("按分類：")
+    for cat, amt in sorted(by_cat.items(), key=lambda x: x[1], reverse=True):
+        pct = (amt / total) * 100 if total > 0 else 0
+        print(f" - {cat:<10} {amt:>8.2f} ({pct:>5.1f}%)")
+
+def delete_expense(data):
+    if not data["expenses"]:
+        print("沒有支出可刪除。")
+        return
+    list_expenses(data)
+    idx = read_int("要刪除的支出編號（以上顯示清單的編號）：")
+    # note: list_expenses shows latest 20 in reversed order; delete based on that view
+    shown = data["expenses"][-20:]
+    if idx < 1 or idx > len(shown):
+        print("編號超出範圍。")
+        return
+    # convert displayed index back to original list index
+    original_index = len(data["expenses"]) - idx
+    removed = data["expenses"].pop(original_index)
+    print(f"[OK] 已刪除：{removed['date']} {removed['category']} {removed['amount']:.2f}")
+
+# ------------------ MAIN MENU ------------------
+
+def main_menu():
+    print("\n==============================")
+    print("  Mini App: Todo + Expenses")
+    print("==============================")
+    print("1) 查看待辦清單")
+    print("2) 新增待辦")
+    print("3) 切換待辦完成/未完成")
+    print("4) 刪除待辦")
+    print("------------------------------")
+    print("5) 查看支出紀錄")
+    print("6) 新增支出")
+    print("7) 支出統計")
+    print("8) 刪除支出")
+    print("------------------------------")
+    print("9) 存檔")
+    print("0) 離開")
+    print("==============================")
+
+def run():
+    data = load_data()
+    print(f"[INFO] Loaded todos={len(data['todos'])}, expenses={len(data['expenses'])}")
+
+    while True:
+        main_menu()
+        choice = input("選擇功能：").strip()
+
+        if choice == "1":
+            list_todos(data); pause()
+        elif choice == "2":
+            add_todo(data); pause()
+        elif choice == "3":
+            toggle_todo(data); pause()
+        elif choice == "4":
+            delete_todo(data); pause()
+        elif choice == "5":
+            list_expenses(data); pause()
+        elif choice == "6":
+            add_expense(data); pause()
+        elif choice == "7":
+            expense_summary(data); pause()
+        elif choice == "8":
+            delete_expense(data); pause()
+        elif choice == "9":
+            save_data(data); pause()
+        elif choice == "0":
+            ans = input("離開前要存檔嗎？(y/n)：").strip().lower()
+            if ans == "y":
+                save_data(data)
+            print("Bye!")
+            break
+        else:
+            print("請輸入 0~9 的選項。")
+
+# Run the app
+run()
