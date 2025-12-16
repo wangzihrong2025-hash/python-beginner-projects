@@ -23,7 +23,7 @@ age=int(input("Age :"))
 
 if age >= 18:
 print(f"{name} is a adlt.")
-else if age >= 13:
+elif age >= 13:
 print(f"{name} is a teenager")
 else:
 print(f"{name} is a child")
