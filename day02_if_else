@@ -1,0 +1,7 @@
+python
+age=20
+
+ if age >= 18
+  print("adlt")
+  else
+  print("children")
