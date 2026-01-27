@@ -3,19 +3,19 @@
 records = []
 
 count = int(input("How many people? "))
-for i in (count):
+for i in range(count):
     age = int(input(f"Age #{i+1}: "))
 
     if age >= 18 :
-      group == "Adult"
+        group = "Adult"
     elif age >=13 :
-      group == "Teenager"
+        group = "Teenager"
     else :
-      group == "Child"
+        group = "Child"
 
     record = {
-      "age" = age,
-      "group" = group
+      "age" : age,
+      "group" : group
     }
     records.append(record)
 
@@ -25,13 +25,13 @@ child = 0
 
 for a in records :
     if a["group"] == "Adult":
-    adult +=1
+        adult +=1
     elif a["group"] == "Teenager":
-    teenager +=1
+        teenager +=1
     else a["group"] == "Child"
-    child +=1
+        child +=1
 
-print("/n----Result")
-print("Adult" : adult )
-print("Teenager" : teenager)  
-print("Child" : child)
+print(" \n----Result")
+print("Adult:" , adult )
+print("Teenager:" , teenager)  
+print("Child:" , child)
