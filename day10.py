@@ -31,7 +31,7 @@ for a in records :
     else a["group"]:
         child +=1
 
-print(" \n----Result")
+print("\n----Result")
 print("Adult:" , adult )
 print("Teenager:" , teenager)  
 print("Child:" , child)
