@@ -28,7 +28,7 @@ for a in records :
         adult +=1
     elif a["group"] == "Teenager":
         teenager +=1
-    else a["group"] == "Child"
+    else a["group"]:
         child +=1
 
 print(" \n----Result")
