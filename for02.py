@@ -10,3 +10,5 @@ for i in range(5,10):
      print(f"{name} is a teenager.")
    else: 
      print(f"{name} is a child.")
+
+
