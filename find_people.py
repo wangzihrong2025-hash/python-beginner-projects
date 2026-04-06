@@ -17,3 +17,4 @@ if search_name in people:
     print(f"{search_name} is {people[search_name]} years old.")
 else:
     print("Not found.")
+
