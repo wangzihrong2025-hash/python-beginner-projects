@@ -11,5 +11,3 @@
        print(f"{name} is a child.")
 
 
-
-
