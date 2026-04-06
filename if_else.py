@@ -26,6 +26,9 @@ if age >= 18:
 elif age >= 13:
    print(f"{name} is a teenager.")
 else:
+
+
+ 
    print(f"{name} is a child.")
 
 
