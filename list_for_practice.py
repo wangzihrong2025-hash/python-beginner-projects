@@ -11,3 +11,5 @@ for age in ages:
     print("teenager")
   else :
     print("child")
+
+
