@@ -38,3 +38,7 @@ for i in range(5):
 print(f"\n---Summary---")
 for record in records:
   print(f"age = {record['Age']} -->  group = {record['Group']}")
+
+
+
+
